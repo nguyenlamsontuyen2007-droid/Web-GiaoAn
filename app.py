@@ -1,6 +1,7 @@
 import streamlit as st
 import docx
 import google.generativeai as genai
+import PyPDF2 # Thư viện hỗ trợ đọc PDF
 
 # ==========================================
 # CẤU HÌNH GIAO DIỆN & CSS HỒNG PASTEL
@@ -20,11 +21,28 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# HÀM XỬ LÝ ĐỌC NHIỀU LOẠI FILE
+def doc_noi_dung_file(uploaded_file):
+    noi_dung = ""
+    # Nếu là Word
+    if uploaded_file.name.endswith('.docx'):
+        doc = docx.Document(uploaded_file)
+        noi_dung = '\n'.join([para.text for para in doc.paragraphs])
+    # Nếu là PDF
+    elif uploaded_file.name.endswith('.pdf'):
+        pdf_reader = PyPDF2.PdfReader(uploaded_file)
+        for page in pdf_reader.pages:
+            noi_dung += page.extract_text() + "\n"
+    # Nếu là Text
+    elif uploaded_file.name.endswith('.txt'):
+        noi_dung = uploaded_file.getvalue().decode("utf-8")
+    return noi_dung
+
 # ==========================================
-# GIAO DIỆN CHÍNH (ĐÃ BỎ THANH SIDEBAR)
+# GIAO DIỆN CHÍNH
 # ==========================================
 st.markdown("<h1>TÍCH HỢP NĂNG LỰC SỐ & AI</h1>", unsafe_allow_html=True)
-st.markdown("<div class='subtext'>Hệ thống tự động phân tích và lồng ghép chuẩn công nghệ vào Kế hoạch bài dạy<br>Phát triển bởi Nguyễn Lâm Sơn Tuyền</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtext'>Hệ thống tự động phân tích và lồng ghép chuẩn công nghệ vào Kế hoạch bài dạy<br>Hỗ trợ: .docx, .pdf, .txt</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -32,13 +50,14 @@ with col1:
 with col2:
     lop_hoc = st.text_input("Lớp học (VD: 9)")
 
-uploaded_file = st.file_uploader("Tải lên Kế hoạch bài dạy (.docx)", type=["docx"])
+# Cập nhật loại file cho phép tải lên
+uploaded_file = st.file_uploader("Tải lên Kế hoạch bài dạy (Word, PDF, hoặc Text)", type=["docx", "pdf", "txt"])
 
 document_text = ""
 if uploaded_file is not None:
-    doc = docx.Document(uploaded_file)
-    document_text = '\n'.join([para.text for para in doc.paragraphs])
-    st.success("Tải tệp thành công. Sẵn sàng xử lý!")
+    with st.spinner('Đang đọc nội dung file...'):
+        document_text = doc_noi_dung_file(uploaded_file)
+        st.success(f"Đã đọc xong: {uploaded_file.name}")
 
 st.write("") 
 if st.button("Bắt Đầu Tích Hợp", use_container_width=True):
@@ -58,31 +77,27 @@ if st.button("Bắt Đầu Tích Hợp", use_container_width=True):
                 QUY TẮC TÍCH HỢP:
                 1. Năng lực số (Gợi ý theo môn):
                    - Toán: GeoGebra, vẽ hình, phần mềm mô phỏng.
-                   - Ngữ văn: Padlet, Google Docs (làm việc nhóm), PowerPoint.
-                   - KHTN: PhET, Labster (thí nghiệm ảo), ứng dụng đo lường.
+                   - Ngữ văn: Padlet, Google Docs, PowerPoint.
+                   - KHTN: PhET, Labster (thí nghiệm ảo).
                    - Tiếng Anh: Quizizz, Kahoot, Duolingo, Blooket.
-                   - Lịch sử/Địa lý: Google Earth, Google Maps, bảo tàng ảo 3D.
-                   - Công nghệ: Tinkercad, thiết kế 3D.
-                   - Kỹ năng chung: Khai thác thông tin, đánh giá độ tin cậy của dữ liệu trên Internet.
+                   - Các môn khác: Khai thác thông tin Internet, làm việc nhóm Online.
                 
                 2. Năng lực AI:
-                   - Dùng AI (ChatGPT, Gemini) làm công cụ hỗ trợ tìm kiếm ý tưởng, giải thích khái niệm.
-                   - Hướng dẫn học sinh nhận diện thông tin do AI tạo ra, kiểm chứng kết quả.
-                   - Giáo dục đạo đức: Không dùng AI để gian lận.
+                   - Dùng AI làm công cụ hỗ trợ tìm ý tưởng, giải thích khái niệm.
+                   - Giáo dục đạo đức AI.
                 
                 GIÁO ÁN GỐC:
                 {document_text}
                 
                 YÊU CẦU TRÌNH BÀY (BẮT BUỘC):
-                - Giữ nguyên toàn bộ cấu trúc, tiến trình và nội dung gốc của giáo án (chữ màu đen bình thường).
-                - CHỈ BÔI ĐỎ những câu từ, hoạt động mà bạn VỪA THÊM VÀO bằng thẻ HTML sau: <span style="color:red; font-weight:bold;">[Nội dung tích hợp]</span>
-                - Tuyệt đối không dùng dấu sao (**) để in đậm cho phần thêm mới.
+                - Giữ nguyên toàn bộ cấu trúc gốc.
+                - CHỈ BÔI ĐỎ bằng thẻ HTML: <span style="color:red; font-weight:bold;">[Nội dung tích hợp]</span>
                 """
                 
                 response = model.generate_content(prompt_instructions)
                 
                 st.markdown("---")
-                st.markdown("<h2>KẾT QUẢ GIÁO ÁN ĐĐ TÍCH HỢP</h2>", unsafe_allow_html=True)
+                st.markdown("<h2>KẾT QUẢ GIÁO ÁN ĐÃ TÍCH HỢP</h2>", unsafe_allow_html=True)
                 with st.container(border=True):
                     st.markdown(response.text, unsafe_allow_html=True)
                     
