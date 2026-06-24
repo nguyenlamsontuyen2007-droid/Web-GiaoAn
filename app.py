@@ -1,148 +1,135 @@
 import streamlit as st
 import docx
 import google.generativeai as genai
-import PyPDF2
 
 # ==========================================
-# CẤU HÌNH GIAO DIỆN & BẢO MẬT BẢN QUYỀN
+# CẤU HÌNH GIAO DIỆN & CSS HỒNG PASTEL
 # ==========================================
-st.set_page_config(page_title="Hệ Sinh Thái AI Giáo Án", page_icon="🏫", layout="wide")
+st.set_page_config(page_title="Hệ thống Giáo án AI", layout="centered")
 
-AUTHORIZED_USER = "SonTuyen" 
-SECRET_PASSWORD = "123"
-
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-
-# --- MÀN HÌNH ĐĂNG NHẬP ---
-if not st.session_state['logged_in']:
-    st.markdown("<h1 style='text-align: center; color: #2e6c80;'>🔒 HỆ THỐNG NÂNG CẤP GIÁO ÁN AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Bản quyền phát triển bởi Sơn Tuyền</p>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+    /* Nền trắng chủ đạo */
+    .stApp {
+        background-color: #FFFFFF;
+    }
+    /* Ẩn menu mặc định của Streamlit cho chuyên nghiệp */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        with st.container(border=True):
-            username = st.text_input("👤 Tên đăng nhập")
-            password = st.text_input("🔑 Mật khẩu", type="password")
-            if st.button("Đăng nhập hệ thống", type="primary", use_container_width=True):
-                if username == AUTHORIZED_USER and password == SECRET_PASSWORD:
-                    st.session_state['logged_in'] = True
-                    st.rerun()
-                else:
-                    st.error("🚫 Thông tin đăng nhập không chính xác!")
-    st.stop()
+    /* Màu chữ tiêu đề (Hồng pastel đậm) */
+    h1, h2, h3 {
+        color: #F48FB1 !important; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 500;
+        text-align: center;
+    }
+    /* Nút bấm tinh tế */
+    .stButton>button {
+        background-color: #FCE4EC !important;
+        color: #C2185B !important;
+        border: 1px solid #F8BBD0 !important;
+        border-radius: 8px !important;
+        padding: 12px 24px;
+        font-weight: 600 !important;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #F8BBD0 !important;
+        color: #880E4F !important;
+    }
+    /* Khung tải file */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: #FCFDFD;
+        border: 1.5px dashed #F8BBD0;
+        border-radius: 10px;
+    }
+    /* Thanh Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #FAFAFA;
+        border-right: 1px solid #FCE4EC;
+    }
+    /* Dòng chữ phụ */
+    .subtext {
+        text-align: center;
+        color: #9E9E9E;
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# HÀM XỬ LÝ DỮ LIỆU FILE
+# GIAO DIỆN CHÍNH
 # ==========================================
-def doc_noi_dung_file(files):
-    van_ban = ""
-    for file in files:
-        if file.name.endswith('.docx'):
-            doc = docx.Document(file)
-            van_ban += '\n'.join([para.text for para in doc.paragraphs]) + "\n\n"
-        elif file.name.endswith('.pdf'):
-            try:
-                pdf_reader = PyPDF2.PdfReader(file)
-                for page in pdf_reader.pages:
-                    if page.extract_text():
-                        van_ban += page.extract_text() + "\n"
-            except:
-                pass
-        elif file.name.endswith('.txt'):
-            van_ban += file.getvalue().decode("utf-8") + "\n\n"
-    return van_ban
+st.markdown("<h1>TÍCH HỢP NĂNG LỰC SỐ & AI</h1>", unsafe_allow_html=True)
+st.markdown("<div class='subtext'>Hệ thống tự động phân tích và lồng ghép chuẩn công nghệ vào Kế hoạch bài dạy<br>Phát triển bởi Nguyễn Lâm Sơn Tuyền</div>", unsafe_allow_html=True)
 
-# ==========================================
-# GIAO DIỆN CHÍNH (SAU KHI ĐĂNG NHẬP)
-# ==========================================
-# --- THANH CÔNG CỤ BÊN TRÁI (SIDEBAR) ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3145/3145765.png", width=100)
-    st.success(f"👨‍🏫 Chào mừng, **{AUTHORIZED_USER}**")
-    st.markdown("---")
-    st.markdown("### ⚙️ Cài đặt Hệ thống")
-    api_key = st.text_input("Nhập Gemini API Key:", type="password", help="Lấy khóa tại aistudio.google.com")
-    
-    st.markdown("---")
-    if st.button("🚪 Đăng xuất", use_container_width=True):
-        st.session_state['logged_in'] = False
-        st.rerun()
+    st.markdown("<h3 style='text-align: left; color: #F48FB1;'>Cài đặt</h3>", unsafe_allow_html=True)
+    api_key = st.text_input("Khóa API Gemini:", type="password")
+    st.markdown("<br><p style='color: #BDBDBD; font-size: 12px;'>Hệ thống đã nạp sẵn dữ liệu từ Thông tư 02/2025/TT-BGDĐT và Công văn 3456/2025.</p>", unsafe_allow_html=True)
 
-# --- KHU VỰC LÀM VIỆC CHÍNH ---
-st.markdown("<h2 style='color: #1f77b4;'>🚀 CÔNG CỤ TÍCH HỢP NĂNG LỰC SỐ & AI VÀO KẾ HOẠCH BÀI DẠY</h2>", unsafe_allow_html=True)
-st.markdown("*Biến giáo án truyền thống thành bài giảng hiện đại chỉ với vài cú click chuột.*")
+col1, col2 = st.columns(2)
+with col1:
+    mon_hoc = st.text_input("Môn học (VD: Toán, Ngữ văn)")
+with col2:
+    lop_hoc = st.text_input("Lớp học (VD: 9)")
 
-# Chia giao diện thành 3 Thẻ (Tabs) mang lại cảm giác ứng dụng chuyên nghiệp
-tab1, tab2, tab3 = st.tabs(["📚 BƯỚC 1: TÀI LIỆU CHUẨN", "📝 BƯỚC 2: TẢI GIÁO ÁN GỐC", "✨ BƯỚC 3: XỬ LÝ & KẾT QUẢ"])
+uploaded_file = st.file_uploader("Tải lên Kế hoạch bài dạy (.docx)", type=["docx"])
 
-with tab1:
-    st.info("💡 Tải lên các văn bản chỉ đạo, định nghĩa hoặc tài liệu tập huấn. Bạn có thể chọn nhiều file cùng lúc.")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        file_so = st.file_uploader("📂 Tệp Tài liệu Năng lực số (.pdf, .docx)", type=["docx", "pdf", "txt"], accept_multiple_files=True, key="so")
-    with col_b:
-        file_ai = st.file_uploader("🤖 Tệp Tài liệu Năng lực AI (.pdf, .docx)", type=["docx", "pdf", "txt"], accept_multiple_files=True, key="ai")
-    
-    tai_lieu_so = doc_noi_dung_file(file_so) if file_so else ""
-    tai_lieu_ai = doc_noi_dung_file(file_ai) if file_ai else ""
+document_text = ""
+if uploaded_file is not None:
+    doc = docx.Document(uploaded_file)
+    document_text = '\n'.join([para.text for para in doc.paragraphs])
+    st.success("Tải tệp thành công. Sẵn sàng xử lý!")
 
-with tab2:
-    st.markdown("### 📌 Thông tin bài giảng")
-    col_info1, col_info2 = st.columns(2)
-    with col_info1:
-        mon_hoc = st.text_input("Môn học (Ví dụ: Toán, Tin học...)")
-    with col_info2:
-        lop_hoc = st.text_input("Lớp (Ví dụ: Lớp 9)")
-        
-    st.markdown("### 📥 Tải tệp Kế hoạch bài dạy")
-    uploaded_file = st.file_uploader("Chọn file giáo án (.docx)", type=["docx"], key="giaoan")
-    document_text = ""
-    if uploaded_file is not None:
-        doc = docx.Document(uploaded_file)
-        document_text = '\n'.join([para.text for para in doc.paragraphs])
-        st.success(f"✅ Đã tải và đọc thành công giáo án: {uploaded_file.name}")
-
-with tab3:
-    st.markdown("### ⚙️ Trí tuệ nhân tạo thực thi")
-    if st.button("🚀 KÍCH HOẠT NÂNG CẤP GIÁO ÁN", type="primary", use_container_width=True):
-        if not api_key:
-            st.error("⚠️ Vui lòng nhập Gemini API Key ở thanh công cụ bên trái!")
-        elif not tai_lieu_so or not tai_lieu_ai:
-            st.error("⚠️ Vui lòng tải lên tài liệu ở Bước 1.")
-        elif not document_text:
-            st.error("⚠️ Vui lòng tải giáo án gốc ở Bước 2.")
-        else:
-            with st.spinner('🤖 AI đang phân tích dữ liệu và lồng ghép các hoạt động. Quá trình này mất khoảng 20-30 giây...'):
-                try:
-                    genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+st.write("") # Tạo khoảng trống
+if st.button("Bắt Đầu Tích Hợp", use_container_width=True):
+    if not api_key:
+        st.error("Vui lòng nhập khóa API Gemini ở thanh công cụ bên trái.")
+    elif not document_text:
+        st.error("Vui lòng tải tệp giáo án lên hệ thống.")
+    else:
+        with st.spinner('Trí tuệ nhân tạo đang phân tích và tái cấu trúc nội dung...'):
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # BỘ NÃO CHỨA SẴN KIẾN THỨC TỪ CÁC TÀI LIỆU BẠN CUNG CẤP
+                prompt_instructions = f"""
+                Bạn là chuyên gia sư phạm và công nghệ giáo dục. Hãy nâng cấp Kế hoạch bài dạy môn {mon_hoc} lớp {lop_hoc} dưới đây bằng cách lồng ghép các hoạt động phát triển Năng lực số và Năng lực AI theo chuẩn Thông tư 02/2025/TT-BGDĐT và Công văn 3456/BGDĐT.
+                
+                QUY TẮC TÍCH HỢP:
+                1. Năng lực số (Gợi ý theo môn):
+                   - Toán: GeoGebra, vẽ hình, phần mềm mô phỏng.
+                   - Ngữ văn: Padlet, Google Docs (làm việc nhóm), PowerPoint.
+                   - KHTN: PhET, Labster (thí nghiệm ảo), ứng dụng đo lường.
+                   - Tiếng Anh: Quizizz, Kahoot, Duolingo, Blooket.
+                   - Lịch sử/Địa lý: Google Earth, Google Maps, bảo tàng ảo 3D.
+                   - Công nghệ: Tinkercad, thiết kế 3D.
+                   - Kỹ năng chung: Khai thác thông tin, đánh giá độ tin cậy của dữ liệu trên Internet.
+                
+                2. Năng lực AI:
+                   - Dùng AI (ChatGPT, Gemini) làm công cụ hỗ trợ tìm kiếm ý tưởng, giải thích khái niệm.
+                   - Hướng dẫn học sinh nhận diện thông tin do AI tạo ra, kiểm chứng kết quả.
+                   - Giáo dục đạo đức: Không dùng AI để gian lận.
+                
+                GIÁO ÁN GỐC:
+                {document_text}
+                
+                YÊU CẦU TRÌNH BÀY (BẮT BUỘC):
+                - Giữ nguyên toàn bộ cấu trúc, tiến trình và nội dung gốc của giáo án (chữ màu đen bình thường).
+                - CHỈ BÔI ĐỎ những câu từ, hoạt động mà bạn VỪA THÊM VÀO bằng thẻ HTML sau: <span style="color:red; font-weight:bold;">[Nội dung tích hợp]</span>
+                - Tuyệt đối không dùng dấu sao (**) để in đậm cho phần thêm mới.
+                """
+                
+                response = model.generate_content(prompt_instructions)
+                
+                st.markdown("---")
+                st.markdown("<h2>KẾ QUẢ GIÁO ÁN ĐÃ TÍCH HỢP</h2>", unsafe_allow_html=True)
+                with st.container(border=True):
+                    st.markdown(response.text, unsafe_allow_html=True)
                     
-                    prompt_instructions = f"""
-                    Bạn là một chuyên gia thiết kế Kế hoạch bài dạy (EdTech). 
-                    Hãy lồng ghép các hoạt động phát triển Năng lực số và Năng lực AI vào giáo án môn {mon_hoc} lớp {lop_hoc} dưới đây.
-                    
-                    TÀI LIỆU CHUẨN ĐỂ ĐỐI CHIẾU:
-                    1. Năng lực số: {tai_lieu_so}
-                    2. Năng lực AI: {tai_lieu_ai}
-                    
-                    GIÁO ÁN GỐC:
-                    {document_text}
-                    
-                    YÊU CẦU ĐẦU RA BẮT BUỘC:
-                    - Giữ nguyên toàn bộ nội dung giáo án cũ (chữ thường).
-                    - BẤT KỲ ĐOẠN NÀO ĐƯỢC THÊM VÀO ĐỂ ĐÁP ỨNG CÔNG NGHỆ, phải bọc trong thẻ HTML: <span style="color:red; font-weight:bold; background-color:#ffe6e6; padding:2px; border-radius:3px;">nội dung mới</span>
-                    - Tuyệt đối không dùng markdown (**) để in đậm phần thêm mới.
-                    """
-                    
-                    response = model.generate_content(prompt_instructions)
-                    result_text = response.text
-                    
-                    st.balloons()
-                    st.success("🎉 Xử lý hoàn tất! Xem kết quả bên dưới.")
-                    
-                    with st.expander("👁️ XEM TRƯỚC GIÁO ÁN ĐÃ TÍCH HỢP", expanded=True):
-                        st.markdown(result_text, unsafe_allow_html=True)
-                        
-                except Exception as e:
-                    st.error(f"Đã xảy ra lỗi hệ thống: {e}")
+            except Exception as e:
+                st.error(f"Đã xảy ra lỗi: {e}")
