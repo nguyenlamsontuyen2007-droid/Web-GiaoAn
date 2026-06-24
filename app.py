@@ -9,66 +9,22 @@ st.set_page_config(page_title="Hệ thống Giáo án AI", layout="centered")
 
 st.markdown("""
 <style>
-    /* Nền trắng chủ đạo */
-    .stApp {
-        background-color: #FFFFFF;
-    }
-    /* Ẩn menu mặc định của Streamlit cho chuyên nghiệp */
+    .stApp { background-color: #FFFFFF; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    
-    /* Màu chữ tiêu đề (Hồng pastel đậm) */
-    h1, h2, h3 {
-        color: #F48FB1 !important; 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-weight: 500;
-        text-align: center;
-    }
-    /* Nút bấm tinh tế */
-    .stButton>button {
-        background-color: #FCE4EC !important;
-        color: #C2185B !important;
-        border: 1px solid #F8BBD0 !important;
-        border-radius: 8px !important;
-        padding: 12px 24px;
-        font-weight: 600 !important;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        background-color: #F8BBD0 !important;
-        color: #880E4F !important;
-    }
-    /* Khung tải file */
-    [data-testid="stFileUploadDropzone"] {
-        background-color: #FCFDFD;
-        border: 1.5px dashed #F8BBD0;
-        border-radius: 10px;
-    }
-    /* Thanh Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #FAFAFA;
-        border-right: 1px solid #FCE4EC;
-    }
-    /* Dòng chữ phụ */
-    .subtext {
-        text-align: center;
-        color: #9E9E9E;
-        font-size: 14px;
-        margin-bottom: 30px;
-    }
+    h1, h2, h3 { color: #F48FB1 !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 500; text-align: center; }
+    .stButton>button { background-color: #FCE4EC !important; color: #C2185B !important; border: 1px solid #F8BBD0 !important; border-radius: 8px !important; padding: 12px 24px; font-weight: 600 !important; transition: all 0.3s ease; }
+    .stButton>button:hover { background-color: #F8BBD0 !important; color: #880E4F !important; }
+    [data-testid="stFileUploadDropzone"] { background-color: #FCFDFD; border: 1.5px dashed #F8BBD0; border-radius: 10px; }
+    .subtext { text-align: center; color: #9E9E9E; font-size: 14px; margin-bottom: 30px; }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# GIAO DIỆN CHÍNH
+# GIAO DIỆN CHÍNH (ĐÃ BỎ THANH SIDEBAR)
 # ==========================================
 st.markdown("<h1>TÍCH HỢP NĂNG LỰC SỐ & AI</h1>", unsafe_allow_html=True)
 st.markdown("<div class='subtext'>Hệ thống tự động phân tích và lồng ghép chuẩn công nghệ vào Kế hoạch bài dạy<br>Phát triển bởi Nguyễn Lâm Sơn Tuyền</div>", unsafe_allow_html=True)
-
-with st.sidebar:
-    st.markdown("<h3 style='text-align: left; color: #F48FB1;'>Cài đặt</h3>", unsafe_allow_html=True)
-    api_key = st.text_input("Khóa API Gemini:", type="password")
-    st.markdown("<br><p style='color: #BDBDBD; font-size: 12px;'>Hệ thống đã nạp sẵn dữ liệu từ Thông tư 02/2025/TT-BGDĐT và Công văn 3456/2025.</p>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -84,19 +40,18 @@ if uploaded_file is not None:
     document_text = '\n'.join([para.text for para in doc.paragraphs])
     st.success("Tải tệp thành công. Sẵn sàng xử lý!")
 
-st.write("") # Tạo khoảng trống
+st.write("") 
 if st.button("Bắt Đầu Tích Hợp", use_container_width=True):
-    if not api_key:
-        st.error("Vui lòng nhập khóa API Gemini ở thanh công cụ bên trái.")
-    elif not document_text:
+    if not document_text:
         st.error("Vui lòng tải tệp giáo án lên hệ thống.")
     else:
         with st.spinner('Trí tuệ nhân tạo đang phân tích và tái cấu trúc nội dung...'):
             try:
+                # LẤY KHÓA TỪ KÉT SẮT CỦA STREAMLIT
+                api_key = st.secrets["GEMINI_API_KEY"]
                 genai.configure(api_key=api_key)
                 model = genai.GenerativeModel('gemini-1.5-flash')
                 
-                # BỘ NÃO CHỨA SẴN KIẾN THỨC TỪ CÁC TÀI LIỆU BẠN CUNG CẤP
                 prompt_instructions = f"""
                 Bạn là chuyên gia sư phạm và công nghệ giáo dục. Hãy nâng cấp Kế hoạch bài dạy môn {mon_hoc} lớp {lop_hoc} dưới đây bằng cách lồng ghép các hoạt động phát triển Năng lực số và Năng lực AI theo chuẩn Thông tư 02/2025/TT-BGDĐT và Công văn 3456/BGDĐT.
                 
@@ -127,9 +82,9 @@ if st.button("Bắt Đầu Tích Hợp", use_container_width=True):
                 response = model.generate_content(prompt_instructions)
                 
                 st.markdown("---")
-                st.markdown("<h2>KẾ QUẢ GIÁO ÁN ĐÃ TÍCH HỢP</h2>", unsafe_allow_html=True)
+                st.markdown("<h2>KẾT QUẢ GIÁO ÁN ĐĐ TÍCH HỢP</h2>", unsafe_allow_html=True)
                 with st.container(border=True):
                     st.markdown(response.text, unsafe_allow_html=True)
                     
             except Exception as e:
-                st.error(f"Đã xảy ra lỗi: {e}")
+                st.error("Hệ thống chưa tìm thấy mã API. Vui lòng cài đặt trong phần Secrets!")
