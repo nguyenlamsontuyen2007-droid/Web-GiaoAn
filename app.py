@@ -5,37 +5,71 @@ import google.generativeai as genai
 import time
 
 # ==========================================
-# CẤU HÌNH GIAO DIỆN Y CHANG GIAOVIENDOIMOI
+# CẤU HÌNH TRANG CHỦ & ÉP CSS GIAO DIỆN
 # ==========================================
-st.set_page_config(page_title="Công cụ AI - Giáo viên đổi mới", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Giáo viên Đổi mới - Công Cụ", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    /* Reset font và khoảng cách mặc định của Streamlit */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+    html, body, [class*="css"] {font-family: 'Inter', sans-serif;}
+    #MainMenu, header, footer {visibility: hidden;}
+    .block-container {padding: 0rem !important; max-width: 100%;}
     
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-    .stApp { background-color: #f0f2f5; }
+    /* 1. THANH MENU (NAVBAR) */
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background-color: white; border-bottom: 1px solid #eaeaea; }
+    .nav-logo { font-size: 24px; font-weight: 800; color: #6b5ce7; }
+    .nav-buttons { display: flex; gap: 12px; }
+    .btn-nav { padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; color: white; border: none; cursor: pointer;}
+    .btn-ai { background-color: #00b894; }
+    .btn-tienich { background-color: #00cec9; }
+    .btn-thamgia { background-color: #2ecc71; }
+    .btn-login { background-color: #6c5ce7; }
     
-    /* Ẩn các thành phần mặc định của nền tảng */
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
+    /* 2. KHỐI HERO (BANNER TO MÀU XANH TÍM) */
+    .hero { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; text-align: center; padding: 80px 20px; }
+    .hero h1 { font-size: 46px; font-weight: 800; margin-bottom: 10px; color: white !important; font-family: 'Inter', sans-serif;}
+    .hero h3 { font-size: 22px; font-weight: 600; margin-bottom: 15px; color: white !important;}
+    .hero p { font-size: 16px; margin-bottom: 35px; opacity: 0.9; color: white !important;}
+    .hero-btns { display: flex; justify-content: center; gap: 20px; }
+    .btn-hero-white { background-color: white; color: #6c5ce7; padding: 14px 28px; border-radius: 30px; font-weight: 700; border: none; font-size: 16px; cursor: pointer;}
+    .btn-hero-green { background-color: #2ecc71; color: white; padding: 14px 28px; border-radius: 30px; font-weight: 700; border: none; font-size: 16px; cursor: pointer;}
     
-    /* Khung chứa nội dung (Card) */
-    .card { background-color: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); margin-bottom: 24px; }
-    
-    /* Tiêu đề */
-    .main-title { color: #1a73e8; font-weight: 800; font-size: 32px; margin-bottom: 8px; }
-    .sub-title { color: #5f6368; font-size: 16px; margin-bottom: 24px; }
-    
-    /* Nút bấm Kích hoạt */
-    .stButton>button { background-color: #1a73e8 !important; color: white !important; border-radius: 8px !important; font-weight: 700 !important; padding: 14px 24px !important; border: none !important; width: 100% !important; transition: all 0.2s; }
-    .stButton>button:hover { background-color: #1557b0 !important; box-shadow: 0 4px 6px rgba(32,33,36,0.28) !important; }
-    
-    /* Khu vực tải file */
-    [data-testid="stFileUploadDropzone"] { border: 2px dashed #1a73e8; border-radius: 12px; background-color: #f8faff; padding: 30px; }
+    /* 3. KHU VỰC CÔNG CỤ AI BÊN DƯỚI */
+    .app-section { padding: 50px 10%; background-color: #f8f9fa; }
+    .stButton>button { background-color: #6c5ce7 !important; color: white !important; border-radius: 8px !important; font-weight: bold !important; padding: 12px 24px; border: none; width: 100%; transition: all 0.3s ease; }
+    .stButton>button:hover { background-color: #5b4bc4 !important; }
+    [data-testid="stFileUploadDropzone"] { background-color: #FFFFFF; border: 2px dashed #6c5ce7; border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HÀM ĐỌC FILE TÀI LIỆU ---
+# ==========================================
+# VẼ GIAO DIỆN TRANG CHỦ BẰNG HTML
+# ==========================================
+st.markdown("""
+<div class="navbar">
+    <div class="nav-logo">Giáo viên Đổi mới</div>
+    <div class="nav-buttons">
+        <button class="btn-nav btn-ai">✨ Công cụ AI</button>
+        <button class="btn-nav btn-tienich">🧩 Tiện ích GD</button>
+        <button class="btn-nav btn-thamgia">🎮 Tham gia (dành cho học sinh)</button>
+        <button class="btn-nav btn-login">Đăng nhập</button>
+    </div>
+</div>
+
+<div class="hero">
+    <h1>Giáo viên Đổi mới</h1>
+    <h3>Trò chơi dạy học, công cụ AI và hơn thế nữa</h3>
+    <p>Nền tảng dành cho giáo viên công nghệ, cung cấp các công cụ dạy học thông minh để tối ưu hóa việc giảng dạy</p>
+    <div class="hero-btns">
+        <button class="btn-hero-white">Đăng nhập ngay - Không cần đăng ký!</button>
+        <button class="btn-hero-green">🎮 Tham gia (dành cho học sinh)</button>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# --- HÀM ĐỌC FILE ---
 def doc_noi_dung_file(uploaded_file):
     text = ""
     try:
@@ -53,88 +87,60 @@ def doc_noi_dung_file(uploaded_file):
     return text
 
 # ==========================================
-# THANH MENU BÊN TRÁI (SIDEBAR TÀI KHOẢN)
+# KHU VỰC TÍCH HỢP AI NẰM BÊN DƯỚI KHỐI HERO
 # ==========================================
-with st.sidebar:
-    st.markdown("<h2 style='color: #1a73e8; font-weight: 800; text-align: center;'>AI TOOLS HUB</h2>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.markdown("### 🛠️ Bộ công cụ AI")
-    st.radio("Chọn chức năng:", ["📚 Giáo án tích hợp NLS", "📝 Tạo bài tập (Sắp ra mắt)", "📊 Làm Slide (Sắp ra mắt)"])
-    st.markdown("---")
-    st.success("💎 TÀI KHOẢN VIP (Miễn phí)")
-    st.info("✔️ Không giới hạn lượt dùng\n\n✔️ Không cần nạp tiền\n\n✔️ Không cần API Key")
+st.markdown("<div class='app-section'>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center; color:#6c5ce7; margin-bottom: 30px;'>Khu Vực Làm Việc: Tích Hợp Năng Lực Số Bằng AI</h2>", unsafe_allow_html=True)
 
-# ==========================================
-# KHU VỰC LÀM VIỆC CHÍNH (MAIN WORKSPACE)
-# ==========================================
-st.markdown("<div class='main-title'>⚡ Xử lý Giáo án Tích hợp Năng Lực Số</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Hệ thống tự động đọc giáo án và lồng ghép chuẩn công nghệ theo tiêu chuẩn của Bộ Giáo Dục.</div>", unsafe_allow_html=True)
-
-# Chia màn hình làm 2 cột
-col1, col2 = st.columns([1, 1.3])
+col1, col2 = st.columns([1, 1.5])
 
 with col1:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("### 1. Thông tin bài học")
-    # Các trường thông tin giống hệt trang giaoviendoimoi
-    bo_sach = st.selectbox("📚 Bộ sách giáo khoa:", ["Kết nối tri thức với cuộc sống", "Chân trời sáng tạo", "Cánh diều", "Khác"])
-    mon_hoc = st.text_input("📝 Môn học:", placeholder="VD: Toán, Ngữ văn...")
-    lop_hoc = st.selectbox("🎓 Lớp học:", [str(i) for i in range(1, 13)])
+    st.markdown("### 📝 Cài đặt bài dạy")
+    bo_sach = st.selectbox("📚 Bộ sách:", ["Kết nối tri thức", "Chân trời sáng tạo", "Cánh diều", "Khác"])
+    mon_hoc = st.text_input("Môn học (VD: Toán, Văn):")
+    lop_hoc = st.text_input("Lớp (VD: 9):")
     
-    st.markdown("### 2. Tài liệu đầu vào")
-    uploaded_file = st.file_uploader("Tải lên giáo án (.docx, .pdf)", type=["docx", "pdf", "txt"])
+    st.markdown("### 📂 Tải tài liệu")
+    uploaded_file = st.file_uploader("Kéo thả Word/PDF vào đây", type=["docx", "pdf", "txt"])
     
     doc_text = ""
     if uploaded_file:
         doc_text = doc_noi_dung_file(uploaded_file)
-        st.success(f"✅ Đã tải thành công: {uploaded_file.name}")
+        st.success(f"Đã nạp tệp: {uploaded_file.name}")
         
     st.markdown("<br>", unsafe_allow_html=True)
-    submit_btn = st.button("🚀 KÍCH HOẠT XỬ LÝ AI")
-    st.markdown("</div>", unsafe_allow_html=True)
+    submit_btn = st.button("🚀 BẮT ĐẦU XỬ LÝ AI")
 
 with col2:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("### 🎯 Kết quả hiển thị")
-    
+    st.markdown("### 🎯 Kết Quả")
     if submit_btn:
-        if not uploaded_file:
-            st.warning("⚠️ Vui lòng tải tài liệu lên trước khi Kích hoạt.")
-        elif not mon_hoc:
-            st.warning("⚠️ Vui lòng nhập tên Môn học.")
+        if not uploaded_file or not mon_hoc:
+            st.warning("Vui lòng nhập tên môn và tải file lên!")
         else:
-            with st.spinner("🤖 Trí tuệ nhân tạo đang phân tích và tái cấu trúc giáo án..."):
+            with st.spinner("AI đang tái cấu trúc giáo án..."):
                 try:
-                    # --- CHÌA KHÓA CỦA CHỊ ĐÃ ĐƯỢC GIẤU Ở ĐÂY ---
+                    # MÃ API CỦA CHỊ ĐÃ NẰM Ở ĐÂY
                     api_key = "AQ.Ab8RN6Jp15D-9J2mAdBD4jd2zzgML76nOYtWEDtlhXtYvZ5xFg"
-                    
                     genai.configure(api_key=api_key)
                     model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     prompt = f"""
-                    Nhiệm vụ: Nâng cấp Kế hoạch bài dạy môn {mon_hoc} lớp {lop_hoc} (Thuộc bộ sách: {bo_sach}).
-                    Hãy lồng ghép các hoạt động phát triển Năng lực số và AI theo chuẩn Thông tư 02.
+                    Nâng cấp Giáo án môn {mon_hoc} lớp {lop_hoc} (Bộ: {bo_sach}). 
+                    Lồng ghép Năng lực số và AI theo chuẩn. Giữ nguyên toàn bộ bài gốc.
+                    Chỉ bôi đỏ các phần THÊM MỚI bằng thẻ HTML: <span style="color:red; font-weight:bold;">[nội dung]</span>
                     
-                    QUY TẮC HIỂN THỊ:
-                    1. Giữ nguyên 100% cấu trúc và nội dung gốc.
-                    2. Tại vị trí nào bạn thêm hoạt động công nghệ vào, hãy bôi đỏ bằng thẻ: <span style="color:red; font-weight:bold;">[Nội dung tích hợp công nghệ]</span>
-                    
-                    NỘI DUNG GIÁO ÁN GỐC:
+                    NỘI DUNG GỐC:
                     {doc_text}
                     """
                     
                     response = model.generate_content(prompt)
-                    time.sleep(1) # Tạo cảm giác AI đang xử lý giống thật
                     
-                    # Khung hiển thị kết quả có thanh cuộn chuyên nghiệp
-                    st.markdown("<div style='height: 600px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 25px; border-radius: 8px; background: #fff;'>", unsafe_allow_html=True)
+                    st.markdown("<div style='background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; max-height: 500px; overflow-y: auto;'>", unsafe_allow_html=True)
                     st.markdown(response.text, unsafe_allow_html=True)
                     st.markdown("</div>", unsafe_allow_html=True)
-                    
-                    st.success("🎉 Tích hợp thành công! Bạn có thể bôi đen copy đoạn trên dán vào Word.")
                 except Exception as e:
-                    # Đề phòng mã lỗi, hệ thống sẽ báo để chị biết đường thay mã mới
-                    st.error("Lỗi xác thực: Mã API của bạn không hợp lệ hoặc đã hết hạn. Hãy tạo mã AIza... từ Google và thay vào code.")
+                    st.error("Lỗi khóa API. Vui lòng kiểm tra lại mã.")
     else:
-        st.info("👆 Khi bạn bấm Kích hoạt, giáo án hoàn chỉnh sẽ xuất hiện tại đây.")
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.info("Kết quả tích hợp của AI sẽ hiện ở đây.")
+
+st.markdown("</div>", unsafe_allow_html=True) # Kết thúc div khối công cụ
